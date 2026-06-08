@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>물리학 이중슬릿 간섭무늬 - EdTech Simulation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --bg:#070b16;
+    --bg2:#0b1120;
+    --panel:#101a30;
+    --panel2:#16233f;
+    --line:#27365a;
+    --text:#e9eefb;
+    --muted:#a2b4dc;
+    --accent:#56d8ff;
+    --accent2:#ffd56b;
+    --con:#ff2e93;   /* 보강: 핫핑크 */
+    --des:#ccff00;   /* 상쇄: 네온 라임 */
+    --slit:#ffd56b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(900px 600px at 15% -10%, rgba(86,216,255,.08), transparent 60%),
+      radial-gradient(800px 600px at 100% 110%, rgba(255,213,107,.06), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Pretendard','Pretendard Variable',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    min-height:100vh;
+    padding:24px 24px 48px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1400px; margin:0 auto;}
+  header{margin-bottom:22px;}
+  .kicker{
+    font-size:13px;letter-spacing:.22em;color:var(--accent);
+    font-weight:700;text-transform:uppercase;margin-bottom:8px;
+  }
+  h1{
+    font-size:clamp(24px,3.6vw,34px);margin:0;font-weight:800;letter-spacing:-.02em;
+    display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
+  }
+  h1 .sub{font-size:16px;font-weight:500;color:var(--muted);letter-spacing:0;}
+
+  .stage{
+    display:flex;gap:20px;flex-wrap:wrap;align-items:stretch;margin-top:20px;
+  }
+
+  /* ── 컨트롤 패널 ── */
+  .controls{
+    flex:1 1 280px; min-width:280px;
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);border-radius:18px;padding:24px 22px;
+    display:flex;
+    flex-direction:column;
+  }
+  .panel-title{
+    font-size:12px;letter-spacing:.18em;color:var(--muted);font-weight:700;
+    text-transform:uppercase;margin:0 0 6px;
+  }
+  .ctrl{margin-top:24px;}
+  .ctrl:first-of-type{margin-top:16px;}
+  .ctrl .lab{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .ctrl .lab .name{font-size:16px;font-weight:600;}
+  .ctrl .lab .name b{color:var(--accent);font-style:italic;font-weight:800;}
+  .ctrl .lab .val{
+    font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;color:var(--text);
+    background:var(--panel2);border:1px solid var(--line);
+    padding:4px 12px;border-radius:8px;min-width:76px;text-align:center;
+  }
+  .swatch{width:14px;height:14px;border-radius:4px;display:inline-block;
+    vertical-align:-2px;margin-right:8px;box-shadow:0 0 8px currentColor;}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:6px;
+    background:var(--panel2);outline:none;cursor:pointer;border:1px solid var(--line);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--accent);border:4px solid #06203a;cursor:pointer;
+    box-shadow:0 0 12px rgba(86,216,255,.6);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;background:var(--accent);
+    border:4px solid #06203a;cursor:pointer;box-shadow:0 0 12px rgba(86,216,255,.6);
+  }
+  .presets{display:flex;gap:8px;margin-top:14px;}
+  .presets button{
+    flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--text);
+    border-radius:8px;padding:8px 0;font-size:13px;font-weight:700;cursor:pointer;
+    font-family:inherit;transition:.15s;
+  }
+  .presets button:hover{border-color:var(--accent);color:var(--accent);}
+
+  .toolbar{display:flex;gap:10px;margin-top:auto;padding-top:24px;}
+  .toolbar button{
+    flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--text);
+    border-radius:10px;padding:12px 0;font-size:15px;font-weight:700;cursor:pointer;
+    font-family:inherit;transition:.15s;
+  }
+  .toolbar button:hover{border-color:var(--accent);}
+  .toolbar button.on{background:linear-gradient(180deg,#0d3a52,#0a2b3e);
+    border-color:var(--accent);color:var(--accent);box-shadow:inset 0 0 14px rgba(86,216,255,.18);}
+
+  /* ── 시각화 영역 ── */
+  .visuals{
+    flex:4 1 960px;display:flex;gap:18px;align-items:flex-start;
+    background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);border-radius:18px;padding:18px;
+    overflow-x:hidden;
+  }
+  .canvas-card{position:relative; flex: 0 0 auto;}
+  canvas{display:block;border-radius:12px;}
+  #main{box-shadow:0 0 0 1px var(--line),0 8px 30px rgba(0,0,0,.4);background:#02060f;cursor:crosshair;}
+  .vis-cap{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;letter-spacing:.05em;font-weight:600;}
+  .scr-col{display:flex;flex-direction:column; flex: 0 0 auto;}
+  .scr-row{display:flex;}
+  #screen{box-shadow:0 0 0 1px var(--line);background:#000;}
+  #graph{background:#02060f;border-radius:0 10px 10px 0;box-shadow:0 0 0 1px var(--line);}
+
+  /* ── 우측 결과 출력 패널 ── */
+  .outputs-column {
+    flex: 0 0 250px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .readout{
+    background:var(--bg2);border:1px solid var(--line);
+    border-radius:14px;padding:16px 16px;
+  }
+  .readout .rt{font-size:12px;letter-spacing:.14em;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:12px;}
+  .formula{
+    text-align:center;font-size:16px;color:var(--text);margin:4px 0 16px;
+    font-style:italic;font-variant-numeric:tabular-nums;font-weight:600;
+    background:var(--panel);padding:8px;border-radius:8px;border:1px solid var(--line);
+  }
+  .formula .q{color:var(--accent);font-weight:800;}
+  
+  .rrow{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:8px 0;border-top:1px dashed #20304f;}
+  .rrow:first-of-type{border-top:none;}
+  .rrow .k{color:var(--muted);font-weight:500;}
+  .rrow .v{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;}
+
+  /* 경로차 추적 박스 */
+  .track-box{
+    border-radius:14px;padding:16px 16px;border:1px solid var(--line);
+    background:var(--bg2);transition:.2s;
+  }
+  .track-box.con{border-color:var(--con);box-shadow:inset 0 0 20px rgba(255,46,147,.12);}
+  .track-box.des{border-color:var(--des);box-shadow:inset 0 0 20px rgba(204,255,0,.12);}
+  .track-box .tag{font-size:12px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  
+  .track-state{font-size:16px;font-weight:800;margin-bottom:10px;text-align:center;}
+  .track-state.con{color:var(--con);}
+  .track-state.des{color:var(--des);}
+  .track-state.mid{color:var(--accent2);}
+  
+  .track-eq{font-size:14px;font-variant-numeric:tabular-nums;font-style:italic;color:var(--text);line-height:1.4;font-weight:700;text-align:center;margin-bottom:12px;background:var(--panel);padding:6px;border-radius:6px;}
+
+  /* 하단 범례 */
+  .legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:18px;font-size:14px;color:var(--muted);font-weight:500;}
+  .legend span{display:inline-flex;align-items:center;gap:8px;}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
+
+  /* ── 탐구 질문 ── */
+  details.inquiry{
+    margin-top:20px;background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);border-radius:16px;padding:6px 20px;
+  }
+  details.inquiry summary{
+    cursor:pointer;padding:16px 0;font-weight:700;font-size:16px;list-style:none;
+    display:flex;align-items:center;gap:10px;color:var(--accent2);
+  }
+  details.inquiry summary::-webkit-details-marker{display:none;}
+  details.inquiry summary::before{content:"▸";transition:.2s;color:var(--accent2);font-size:18px;}
+  details.inquiry[open] summary::before{transform:rotate(90deg);}
+  .poe{display:grid;gap:16px;padding:4px 0 22px;}
+  .poe .step{border-left:4px solid var(--accent);padding:2px 0 2px 16px;}
+  .poe .step h4{margin:0 0 6px;font-size:15px;color:var(--accent);letter-spacing:.05em;font-weight:700;}
+  .poe .step p{margin:0;font-size:14px;color:var(--text);line-height:1.6;}
+  .poe .step:nth-child(2){border-color:var(--con);}
+  .poe .step:nth-child(2) h4{color:var(--con);}
+  .poe .step:nth-child(3){border-color:var(--accent2);}
+  .poe .step:nth-child(3) h4{color:var(--accent2);}
+
+  /* 2, 3. 제작자 정보 글씨 크기 1.5배 확대 조정 (13px -> 19.5px) */
+  footer {
+    margin-top: 50px;
+    padding-top: 10px;
+    text-align: center;
+    font-size: 19.5px;
+    font-weight: 500;
+    color: rgba(162, 180, 220, 0.55);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width:1120px){
+    .visuals { flex-wrap: wrap; overflow-x: visible; }
+    .outputs-column { flex: 1 1 100%; }
+  }
+  @media (max-width:560px){
+    body{padding:16px 12px 30px;}
+    .visuals{padding:12px;}
+    footer { font-size: 16px; } /* 모바일 배려 크기 최적화 */
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">물리학 시뮬레이션</div>
+    <h1>이중슬릿 간섭 시뮬레이션 <span class="sub">파동의 중첩 · 경로차 · 간섭무늬</span></h1>
+  </header>
+
+  <div class="stage">
+    <section class="controls">
+      <div class="panel-title">변인 조절 · INPUT</div>
+
+      <div class="ctrl">
+        <div class="lab">
+          <span class="name"><span class="swatch" id="sw"></span>파장 <b>λ</b></span>
+          <span class="val" id="lamVal">530 nm</span>
+        </div>
+        <input type="range" id="lam" min="380" max="700" value="530" step="1">
+        <div class="presets">
+          <button data-nm="410">보라</button>
+          <button data-nm="470">파랑</button>
+          <button data-nm="530">초록</button>
+          <button data-nm="660">빨강</button>
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <div class="lab">
+          <span class="name">슬릿 간격 <b>d</b></span>
+          <span class="val" id="dVal">50</span>
+        </div>
+        <input type="range" id="d" min="8" max="100" value="50" step="1">
+      </div>
+
+      <div class="ctrl">
+        <div class="lab">
+          <span class="name">슬릿–스크린 거리 <b>L</b></span>
+          <span class="val" id="lVal">60</span>
+        </div>
+        <input type="range" id="L" min="20" max="100" value="60" step="1">
+      </div>
+
+      <div class="toolbar">
+        <button id="play" class="on">⏸ 정지</button>
+        <button id="track" class="on">🎯 경로차 추적</button>
+      </div>
+    </section>
+
+    <section class="visuals">
+      <div class="canvas-card">
+        <canvas id="main" width="540" height="420"></canvas>
+        <div class="vis-cap">메인 뷰 · 위에서 본 파동의 전파와 중첩</div>
+      </div>
+      
+      <div class="scr-col">
+        <div class="scr-row">
+          <canvas id="screen" width="40" height="420"></canvas>
+          <canvas id="graph" width="150" height="420"></canvas>
+        </div>
+        <div class="vis-cap">스크린 무늬 · 그래프</div>
+      </div>
+
+      <div class="outputs-column">
+        <div class="readout">
+          <div class="rt">결과 · OUTPUT</div>
+          <div class="formula">무늬 간격 <span class="q">Δx</span> = <span class="q">L</span>λ / <span class="q">d</span></div>
+          <div class="rrow"><span class="k">무늬 간격 Δx</span><span class="v" id="oDx">–</span></div>
+          <div class="rrow"><span class="k">파장 λ</span><span class="v" id="oLam">530 nm</span></div>
+          <div class="rrow"><span class="k">스크린 거리 L</span><span class="v" id="oL">60</span></div>
+          <div class="rrow"><span class="k">슬릿 간격 d</span><span class="v" id="oD">50</span></div>
+        </div>
+
+        <div class="track-box" id="trackBox">
+          <div class="tag">경로차 추적</div>
+          <div class="track-state mid" id="tState">화면 위를 움직여 보세요</div>
+          <div class="track-eq" id="tEq">거리 차 = 경로차</div>
+          <div class="rrow" style="margin-top:6px;"><span class="k">슬릿1 거리 (r₁)</span><span class="v" id="tR1">–</span></div>
+          <div class="rrow"><span class="k">슬릿2 거리 (r₂)</span><span class="v" id="tR2">–</span></div>
+          <div class="rrow"><span class="k">경로차 |r₂−r₁|</span><span class="v" id="tDr">–</span></div>
+          <div class="rrow"><span class="k">경로차÷파장</span><span class="v" id="tRatio">–</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:var(--con)"></span>밝은 무늬 = 보강간섭 (경로차 = 반파장의 짝수배)</span>
+    <span><span class="dot" style="background:var(--des)"></span>어두운 무늬 = 상쇄간섭 (경로차 = 반파장의 홀수배)</span>
+    <span><span class="dot" style="background:var(--slit)"></span>슬릿(파동의 새 발생원)</span>
+  </div>
+
+  <details class="inquiry">
+    <summary>탐구 활동 안내 (예측–관찰–설명, POE)</summary>
+    <div class="poe">
+      <div class="step">
+        <h4>PREDICT · 예측</h4>
+        <p>파장을 길게(빨간색) 바꾸거나, 슬릿 간격 <i>d</i>를 좁히면 스크린의 무늬 간격은 넓어질까요, 좁아질까요? 먼저 예상해 봅시다.</p>
+      </div>
+      <div class="step">
+        <h4>OBSERVE · 관찰</h4>
+        <p>슬라이더를 직접 움직이며 오른쪽 스크린 무늬와 세기 그래프의 간격 변화를 관찰하고, 결과창의 Δx 값과 비교해 봅시다.</p>
+      </div>
+      <div class="step">
+        <h4>EXPLAIN · 설명</h4>
+        <p>🎯 경로차 추적을 켜고 밝은 무늬·어두운 무늬 위를 짚어 보세요. 경로차가 <b>반파장의 짝수배(m·2·λ/2)</b>면 보강간섭이, <b>반파장의 홀수배((2m+1)·λ/2)</b>면 상쇄간섭이 일어남을 확인하고 그 까닭을 설명해 봅시다.</p>
+      </div>
+    </div>
+  </details>
+
+  <footer>
+    제작자 (문의) : 강원고 박준영 xodlf51@naver.com
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ── 캔버스/버퍼 설정 ──────────────────────────────
+  const main = document.getElementById('main');
+  const mctx = main.getContext('2d');
+  const SCALE = 2;
+  const W = main.width, H = main.height;
+  const BW = W/SCALE, BH = H/SCALE;
+  const N = BW*BH;
+
+  const off = document.createElement('canvas');
+  off.width = BW; off.height = BH;
+  const octx = off.getContext('2d');
+  const img = octx.createImageData(BW, BH);
+
+  const screenCv = document.getElementById('screen');
+  const sctx = screenCv.getContext('2d');
+  const graphCv = document.getElementById('graph');
+  const gctx = graphCv.getContext('2d');
+  const SH = screenCv.height;
+
+  // ── 시뮬레이션 상태 ───────────────────────────────
+  const fieldA = new Float32Array(N);
+  const fieldB = new Float32Array(N);
+  const invMax = new Float32Array(N);
+  const mask   = new Uint8Array(N);
+  let baseRGB = [120,255,120];
+
+  const CVIS = 60;
+  let nm = 530, dSlider = 50, lSlider = 60;
+  let lambda_px, k, omega, d_px, L_px;
+  let screenX = BW - 2;
+  let barrierX, cy = BH/2, slit1y, slit2y;
+  const WALL = [38,52,84];
+  const GAP = 3;
+
+  let playing = true, tracking = true;
+  let mouse = null;
+  let t0 = performance.now(), tSec = 0;
+
+  const map = (v,a,b,c,d)=> c + (v-a)*(d-c)/(b-a);
+
+  function wlRGB(w){
+    let r=0,g=0,b=0;
+    if(w<380){w=380;} if(w>700){w=700;}
+    if(w<440){r=-(w-440)/60;b=1;}
+    else if(w<490){g=(w-440)/50;b=1;}
+    else if(w<510){g=1;b=-(w-510)/20;}
+    else if(w<580){r=(w-510)/70;g=1;}
+    else if(w<645){r=1;g=-(w-645)/65;}
+    else{r=1;}
+    const m = Math.max(r,g,b)||1;
+    return [Math.round(255*r/m), Math.round(255*g/m), Math.round(255*b/m)];
+  }
+
+  function recompute(){
+    lambda_px = map(nm,380,700,5.5,16);
+    k = 2*Math.PI/lambda_px;
+    omega = k*CVIS;
+    d_px = map(dSlider,8,100,14, Math.min(118, BH-20));
+    L_px = map(lSlider,20,100, 90, screenX-14);
+    barrierX = Math.max(6, Math.round(screenX - L_px));
+    slit1y = cy - d_px/2;
+    slit2y = cy + d_px/2;
+    baseRGB = wlRGB(nm);
+
+    for(let y=0;y<BH;y++){
+      for(let x=0;x<BW;x++){
+        const i = y*BW+x;
+        const inWall = (x>=barrierX-1 && x<=barrierX+1);
+        const open = (Math.abs(y-slit1y)<=GAP) || (Math.abs(y-slit2y)<=GAP);
+        if(inWall && !open){ mask[i]=1; continue; }
+        mask[i]=0;
+        if(x < barrierX){
+          fieldA[i]=Math.sin(k*x);
+          fieldB[i]=Math.cos(k*x);
+          invMax[i]=1.0;
+        }else{
+          const dx1=x-barrierX, dy1=y-slit1y, r1=Math.sqrt(dx1*dx1+dy1*dy1);
+          const dx2=x-barrierX, dy2=y-slit2y, r2=Math.sqrt(dx2*dx2+dy2*dy2);
+          fieldA[i]=Math.sin(k*r1)+Math.sin(k*r2);
+          fieldB[i]=Math.cos(k*r1)+Math.cos(k*r2);
+          invMax[i]=0.5;
+        }
+      }
+    }
+    updateReadout();
+    renderScreen();
+  }
+
+  function renderField(){
+    const c=Math.cos(omega*tSec), s=Math.sin(omega*tSec);
+    const data=img.data;
+    const r0=baseRGB[0], g0=baseRGB[1], b0=baseRGB[2];
+    for(let i=0;i<N;i++){
+      const p=i<<2;
+      if(mask[i]){ data[p]=WALL[0];data[p+1]=WALL[1];data[p+2]=WALL[2];data[p+3]=255; continue; }
+      const amp=fieldA[i]*c - fieldB[i]*s;
+      let f=0.5+0.5*amp*invMax[i];
+      if(f<0)f=0; else if(f>1)f=1;
+      data[p]=r0*f; data[p+1]=g0*f; data[p+2]=b0*f; data[p+3]=255;
+    }
+    octx.putImageData(img,0,0);
+    mctx.imageSmoothingEnabled=true;
+    mctx.drawImage(off,0,0,BW,BH,0,0,W,H);
+    drawOverlay();
+  }
+
+  function drawOverlay(){
+    const bx=barrierX*SCALE;
+    mctx.font='700 13px Pretendard, sans-serif';
+    mctx.textBaseline='top';
+    mctx.fillStyle='rgba(233,238,251,.85)';
+    mctx.fillText('입사광 →', 10, 10);
+    mctx.save(); mctx.fillStyle='rgba(255,213,107,1)';
+    mctx.fillText('이중슬릿', bx-26, 10);
+    mctx.fillStyle='rgba(86,216,255,1)';
+    mctx.fillText('스크린', W-52, 10);
+    mctx.restore();
+    
+    mctx.strokeStyle='rgba(86,216,255,.5)';
+    mctx.lineWidth=2; mctx.beginPath();
+    mctx.moveTo(W-1,0); mctx.lineTo(W-1,H); mctx.stroke();
+
+    const s1=[bx, slit1y*SCALE], s2=[bx, slit2y*SCALE];
+    [s1,s2].forEach(s=>{
+      mctx.beginPath();
+      mctx.fillStyle='rgba(255,213,107,.95)';
+      mctx.shadowColor='rgba(255,213,107,.9)'; mctx.shadowBlur=10;
+      mctx.arc(s[0],s[1],5,0,7); mctx.fill(); mctx.shadowBlur=0;
+    });
+
+    if(tracking && mouse){
+      const mx=mouse.x*SCALE, my=mouse.y*SCALE;
+      const info=trackInfo(mouse.x,mouse.y);
+      const col = info.type==='con' ? getCSS('--con') : info.type==='des' ? getCSS('--des') : getCSS('--accent2');
+      
+      [s1,s2].forEach((s,idx)=>{
+        mctx.beginPath();
+        mctx.strokeStyle = idx===0 ? 'rgba(86,216,255,.85)' : 'rgba(255,170,120,.85)';
+        mctx.lineWidth=2; mctx.setLineDash([5,4]);
+        mctx.moveTo(s[0],s[1]); mctx.lineTo(mx,my); mctx.stroke();
+        mctx.setLineDash([]);
+
+        const cx = (s[0] + mx) / 2;
+        const cy = (s[1] + my) / 2;
+        mctx.save();
+        mctx.font = 'bold 12px Pretendard';
+        mctx.fillStyle = idx===0 ? '#86e4ff' : '#ffaa78';
+        mctx.shadowColor = '#000'; mctx.shadowBlur = 4;
+        mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
+        mctx.fillText(idx===0 ? 'r₁' : 'r₂', cx, cy - 6);
+        mctx.restore();
+      });
+
+      mctx.beginPath();
+      mctx.fillStyle=col; mctx.shadowColor=col; mctx.shadowBlur=14;
+      mctx.arc(mx,my,6,0,7); mctx.fill(); mctx.shadowBlur=0;
+    }
+  }
+
+  function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+  function trackInfo(px,py){
+    const r1=Math.hypot(px-barrierX, py-slit1y);
+    const r2=Math.hypot(px-barrierX, py-slit2y);
+    const dr=Math.abs(r2-r1);
+    const ratio=dr/lambda_px;
+    const m=Math.round(ratio);
+    const dInt=Math.abs(ratio-m);
+    const dHalf=Math.abs(ratio-(Math.floor(ratio)+0.5));
+    let type='mid';
+    if(dInt<0.13) type='con';
+    else if(dHalf<0.13) type='des';
+    return {r1,r2,dr,ratio,m,type};
+  }
+
+  function renderScreen(){
+    const sw=screenCv.width;
+    const idata=sctx.createImageData(sw,SH);
+    const gw=graphCv.width;
+    gctx.clearRect(0,0,gw,SH);
+    
+    gctx.strokeStyle='rgba(39,54,90,.6)'; gctx.lineWidth=1;
+    for(let gx=0;gx<=4;gx++){const xx=8+gx*(gw-16)/4;gctx.beginPath();gctx.moveTo(xx,0);gctx.lineTo(xx,SH);gctx.stroke();}
+    gctx.fillStyle='rgba(142,160,198,.8)'; gctx.font='bold 11px Pretendard'; gctx.textBaseline='bottom';
+    gctx.fillText('세기 I', 10, SH-6);
+
+    const pts=[];
+    for(let yd=0; yd<SH; yd++){
+      const yb = yd/SCALE;
+      const r1=Math.hypot(screenX-barrierX, yb-slit1y);
+      const r2=Math.hypot(screenX-barrierX, yb-slit2y);
+      const dphi=k*(r2-r1);
+      let I=Math.cos(dphi/2); I=I*I;
+      const off2=(yd*sw)*4;
+      for(let xx=0;xx<sw;xx++){
+        const p=off2+xx*4;
+        idata.data[p]=baseRGB[0]*I;
+        idata.data[p+1]=baseRGB[1]*I;
+        idata.data[p+2]=baseRGB[2]*I;
+        idata.data[p+3]=255;
+      }
+      pts.push(I);
+    }
+    sctx.putImageData(idata,0,0);
+
+    gctx.beginPath();
+    for(let yd=0;yd<SH;yd++){
+      const x=8+pts[yd]*(gw-16);
+      if(yd===0)gctx.moveTo(x,yd); else gctx.lineTo(x,yd);
+    }
+    gctx.strokeStyle=`rgb(${baseRGB[0]},${baseRGB[1]},${baseRGB[2]})`;
+    gctx.lineWidth=2.5; gctx.shadowColor=gctx.strokeStyle; gctx.shadowBlur=6; gctx.stroke();
+    gctx.shadowBlur=0;
+    gctx.lineTo(8,SH); gctx.lineTo(8,0); gctx.closePath();
+    gctx.fillStyle=`rgba(${baseRGB[0]},${baseRGB[1]},${baseRGB[2]},.14)`; gctx.fill();
+  }
+
+  const $=id=>document.getElementById(id);
+  function updateReadout(){
+    const dx = L_px*lambda_px/d_px;
+    $('oDx').textContent = dx.toFixed(1);
+    $('oLam').textContent = nm+' nm';
+    $('oL').textContent = lSlider;
+    $('oD').textContent = dSlider;
+    $('lamVal').textContent = nm+' nm';
+    $('dVal').textContent = dSlider;
+    $('lVal').textContent = lSlider;
+    const cstr=`rgb(${baseRGB[0]},${baseRGB[1]},${baseRGB[2]})`;
+    $('sw').style.color=cstr; $('sw').style.background=cstr;
+  }
+
+  function updateTrackPanel(){
+    const box=$('trackBox');
+    if(!tracking || !mouse){
+      box.className='track-box';
+      $('tState').className='track-state mid';
+      $('tState').textContent= tracking ? '화면 위를 움직여 보세요' : '추적 꺼짐';
+      $('tEq').textContent='거리 차 = 경로차';
+      $('tR1').textContent=$('tR2').textContent=$('tDr').textContent=$('tRatio').textContent='–';
+      return;
+    }
+    const f=trackInfo(mouse.x,mouse.y);
+    $('tR1').textContent=f.r1.toFixed(1)+' px';
+    $('tR2').textContent=f.r2.toFixed(1)+' px';
+    $('tDr').textContent=f.dr.toFixed(1)+' px';
+    $('tRatio').textContent=f.ratio.toFixed(2)+' λ';
+    
+    if(f.type==='con'){
+      box.className='track-box con';
+      $('tState').className='track-state con'; $('tState').textContent='보강간섭 · 밝은 무늬';
+      $('tEq').textContent=`경로차 = 반파장의 짝수배 (${f.m * 2} × λ/2)`;
+    }else if(f.type==='des'){
+      box.className='track-box des';
+      $('tState').className='track-state des'; $('tState').textContent='상쇄간섭 · 어두운 무늬';
+      $('tEq').textContent=`경로차 = 반파장의 홀수배 (${Math.floor(f.ratio)*2 + 1} × λ/2)`;
+    }else{
+      box.className='track-box';
+      $('tState').className='track-state mid'; $('tState').textContent='중간 영역';
+      $('tEq').textContent=`경로차 = ${f.ratio.toFixed(2)}λ`;
+    }
+  }
+
+  function loop(now){
+    if(playing){ tSec += (now-t0)/1000; }
+    t0=now;
+    renderField();
+    updateTrackPanel();
+    requestAnimationFrame(loop);
+  }
+
+  $('lam').addEventListener('input',e=>{nm=+e.target.value;recompute();});
+  $('d').addEventListener('input',e=>{dSlider=+e.target.value;recompute();});
+  $('L').addEventListener('input',e=>{lSlider=+e.target.value;recompute();});
+  document.querySelectorAll('.presets button').forEach(b=>{
+    b.addEventListener('click',()=>{nm=+b.dataset.nm;$('lam').value=nm;recompute();});
+  });
+  $('play').addEventListener('click',function(){
+    playing=!playing; this.classList.toggle('on',playing);
+    this.textContent= playing ? '⏸ 정지' : '▶ 재생';
+  });
+  $('track').addEventListener('click',function(){
+    tracking=!tracking; this.classList.toggle('on',tracking);
+  });
+  main.addEventListener('mousemove',e=>{
+    const r=main.getBoundingClientRect();
+    mouse={x:(e.clientX-r.left)*(W/r.width)/SCALE, y:(e.clientY-r.top)*(H/r.height)/SCALE};
+  });
+  main.addEventListener('mouseleave',()=>{mouse=null;});
+  main.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const r=main.getBoundingClientRect(); const tp=e.touches[0];
+    mouse={x:(tp.clientX-r.left)*(W/r.width)/SCALE, y:(tp.clientY-r.top)*(H/r.height)/SCALE};
+  },{passive:false});
+
+  recompute();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
