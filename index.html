@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>⚡ 미래형 무선 충전도시의 스마트 알바생</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --cyan:#00eaff; --mag:#ff2bd6; --lime:#b6ff3c; --amber:#ffb01f;
+    --bg0:#04030c; --bg1:#0a0a1f; --panel:rgba(14,14,38,.72); --line:rgba(0,234,255,.18);
+  }
+  *{ -webkit-tap-highlight-color: transparent; box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg0); }
+  body{
+    font-family:'Noto Sans KR',system-ui,sans-serif; color:#dffaff; min-height:100vh; overflow-x:hidden;
+    background:
+      radial-gradient(1100px 560px at 12% -10%, rgba(255,43,214,.15), transparent 60%),
+      radial-gradient(900px 640px at 100% 0%, rgba(0,234,255,.15), transparent 55%),
+      linear-gradient(180deg,var(--bg1),var(--bg0));
+    background-attachment:fixed;
+  }
+  body::before{ content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3;
+    background-image:linear-gradient(rgba(0,234,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(0,234,255,.07) 1px,transparent 1px);
+    background-size:46px 46px; mask-image:radial-gradient(circle at 50% 20%,black,transparent 85%); }
+  body::after{ content:"";position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.05;
+    background:repeating-linear-gradient(180deg,#fff 0 1px,transparent 1px 3px);mix-blend-mode:overlay; }
+  .font-cyber{ font-family:'Orbitron',sans-serif; letter-spacing:.03em; }
+  .neon-cyan{ color:var(--cyan); text-shadow:0 0 8px rgba(0,234,255,.8),0 0 20px rgba(0,234,255,.4); }
+  .neon-mag{ color:var(--mag); text-shadow:0 0 8px rgba(255,43,214,.8),0 0 20px rgba(255,43,214,.4); }
+  .neon-lime{ color:var(--lime); text-shadow:0 0 8px rgba(182,255,60,.8),0 0 20px rgba(182,255,60,.4); }
+  .neon-amber{ color:var(--amber); text-shadow:0 0 8px rgba(255,176,31,.8),0 0 20px rgba(255,176,31,.4); }
+  .panel{ background:var(--panel); border:1px solid var(--line); box-shadow:inset 0 0 22px rgba(0,234,255,.05),0 6px 30px rgba(0,0,0,.5); backdrop-filter:blur(7px); }
+  .tab-btn{ transition:all .2s ease; }
+  .tab-btn.active{ box-shadow:0 0 16px rgba(0,234,255,.5),inset 0 0 12px rgba(0,234,255,.16); }
+  .tab-btn.active.mag{ box-shadow:0 0 16px rgba(255,43,214,.5),inset 0 0 12px rgba(255,43,214,.16); }
+  .glow-cyan{ box-shadow:0 0 14px rgba(0,234,255,.45); }
+  .glow-mag{ box-shadow:0 0 14px rgba(255,43,214,.45); }
+  .glow-lime{ box-shadow:0 0 16px rgba(182,255,60,.6); }
+  canvas{ display:block; width:100%; border-radius:12px; touch-action:none; }
+  .batt-track{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); overflow:hidden; }
+  .batt-fill{ transition:width .1s linear,background .3s; height:100%; }
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:13px; border-radius:999px; outline:none;
+    background:linear-gradient(90deg,#10324a,#0c1430); border:1px solid rgba(0,234,255,.25); }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:28px; height:28px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#bff7ff,var(--cyan)); border:2px solid #eaffff; cursor:pointer;
+    box-shadow:0 0 12px var(--cyan),0 0 24px rgba(0,234,255,.6); }
+  input[type=range]::-moz-range-thumb{ width:26px;height:26px;border-radius:50%;border:2px solid #eaffff;
+    background:radial-gradient(circle at 35% 30%,#bff7ff,var(--cyan)); cursor:pointer; box-shadow:0 0 12px var(--cyan); }
+  input.mag[type=range]{ border-color:rgba(255,43,214,.3); }
+  input.mag[type=range]::-webkit-slider-thumb{ background:radial-gradient(circle at 35% 30%,#ffd6f4,var(--mag)); box-shadow:0 0 12px var(--mag),0 0 24px rgba(255,43,214,.6); }
+  input.mag[type=range]::-moz-range-thumb{ background:radial-gradient(circle at 35% 30%,#ffd6f4,var(--mag)); box-shadow:0 0 12px var(--mag); }
+  .ctrl-btn{ transition:transform .08s ease,box-shadow .2s,opacity .2s; user-select:none; }
+  .ctrl-btn:active{ transform:scale(.94); }
+  .ctrl-btn[disabled]{ opacity:.4; filter:grayscale(.6); cursor:not-allowed; }
+  .overlay-msg{ animation:pop .4s cubic-bezier(.18,1.4,.4,1) both; }
+  @keyframes pop{ from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes flicker{ 0%,100%{opacity:1} 45%{opacity:.4} 55%{opacity:.9} }
+  .flicker{ animation:flicker .25s infinite; }
+  .hidden-tab{ display:none !important; }
+  .help-body{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
+  .help-body.open{ max-height:520px; }
+  .dirbtn{ transition:all .15s; }
+  .dirbtn.on{ box-shadow:0 0 14px rgba(255,43,214,.6),inset 0 0 10px rgba(255,43,214,.25); }
+  /* viewport-fit: 큰 화면에선 그리드가 화면 높이에 맞춰 채워져 부스터까지 한 눈에 */
+  .minh0{ min-height:0; }
+  .canvas-wrap{ position:relative; width:100%; }
+  .canvas-wrap>canvas{ position:absolute; inset:0; width:100%; height:100%; border-radius:12px; }
+  .scene-wrap{ aspect-ratio:16/10; }
+  .graph-wrap{ aspect-ratio:16/4.3; }
+  @media (min-width:1024px){
+    .fitvh{ height:calc(100vh - 150px); height:calc(100dvh - 150px); min-height:440px; max-height:820px; }
+    .scene-wrap, .graph-wrap{ aspect-ratio:auto; }
+  }
+</style>
+</head>
+
+<body class="relative z-10">
+<div class="max-w-[1180px] mx-auto px-2 sm:px-4 pb-10 relative z-10">
+
+  <!-- ===== COMPACT HEADER ROW ===== -->
+  <header class="flex items-center justify-between gap-3 pt-3 pb-2">
+    <h1 class="font-cyber font-black text-base sm:text-xl leading-none">
+      <span class="neon-cyan">⚡ 무선 충전도시</span> <span class="neon-mag">스마트 알바생</span>
+    </h1>
+    <div class="flex gap-2">
+      <button id="pauseBtn" class="ctrl-btn panel rounded-lg px-3 py-2 text-xs sm:text-sm font-bold glow-cyan">⏸ 일시정지</button>
+      <button id="resetBtn" class="ctrl-btn panel rounded-lg px-3 py-2 text-xs sm:text-sm font-bold">↻ 리셋</button>
+    </div>
+  </header>
+
+  <!-- ===== TABS ===== -->
+  <nav class="flex gap-2 mb-2">
+    <button id="tabBtn1" class="tab-btn active flex-1 panel rounded-xl px-3 py-2 text-left">
+      <div class="font-cyber text-[10px] neon-cyan">MODE 01 · 코일이 움직인다</div>
+      <div class="text-xs sm:text-sm font-bold">🛴 등교 미션! 킥보드 충전 도로</div>
+    </button>
+    <button id="tabBtn2" class="tab-btn mag flex-1 panel rounded-xl px-3 py-2 text-left">
+      <div class="font-cyber text-[10px] neon-mag">MODE 02 · 자기장이 변한다</div>
+      <div class="text-xs sm:text-sm font-bold">📱 찌릿찌릿! 카페 충전 패드</div>
+    </button>
+  </nav>
+
+  <!-- ============================ TAB 1 ============================ -->
+  <section id="tab1">
+    <div class="grid lg:grid-cols-[1.35fr_1fr] gap-2.5 fitvh">
+      <!-- LEFT: scene + battery -->
+      <div class="flex flex-col gap-2 minh0">
+        <div class="canvas-wrap scene-wrap flex-1 minh0">
+          <canvas id="cv1"></canvas>
+          <div class="absolute top-2.5 left-2.5 right-2.5 flex justify-between items-start pointer-events-none font-cyber">
+            <div class="panel rounded-xl px-3.5 py-2 text-[13px]">
+              <div class="text-cyan-100/60 leading-none">남은 시간</div>
+              <div id="t1time" class="text-2xl sm:text-3xl neon-cyan leading-tight">60.0</div>
+            </div>
+            <div class="panel rounded-xl px-3.5 py-2 text-[13px] text-center">
+              <div class="text-cyan-100/60 leading-none">학교까지</div>
+              <div id="t1prog" class="text-2xl sm:text-3xl neon-lime leading-tight">0%</div>
+            </div>
+            <div class="panel rounded-xl px-3.5 py-2 text-[13px] text-right">
+              <div class="text-cyan-100/60 leading-none">유도 전류</div>
+              <div id="t1cur" class="text-2xl sm:text-3xl neon-amber leading-tight">0.00 A</div>
+            </div>
+          </div>
+          <div id="t1overlay" class="absolute inset-0 hidden items-center justify-center pointer-events-none"></div>
+        </div>
+        <div class="panel rounded-xl p-2.5">
+          <div class="flex justify-between text-[11px] mb-1">
+            <span class="font-bold">🔋 충전 게이지 <span class="text-cyan-100/50">(부스터 연료)</span></span>
+            <span id="t1battTxt" class="font-cyber neon-cyan">0%</span>
+          </div>
+          <div class="batt-track rounded-full h-4">
+            <div id="t1battFill" class="batt-fill rounded-full" style="width:0%;background:linear-gradient(90deg,#00eaff,#b6ff3c);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: 자속 그래프 + 유도전압 그래프 + 조작부 -->
+      <div class="flex flex-col gap-2 minh0">
+        <div class="panel rounded-xl p-2 flex flex-col flex-1 minh0">
+          <div class="text-[11px] font-bold mb-0.5">📈 시간 – 자속(Φ) 그래프 <span class="text-cyan-100/50">(코일이 패드를 지날 때 변함)</span></div>
+          <div class="canvas-wrap graph-wrap flex-1 minh0"><canvas id="cv1f"></canvas></div>
+          <div class="flex justify-between text-[9px] mt-0.5 font-cyber">
+            <span class="neon-cyan">⊗ 들어감 ＋</span><span style="color:#a8b0cc">Φ = 0</span><span class="neon-amber">⊙ 나옴 －</span>
+          </div>
+        </div>
+        <div class="panel rounded-xl p-2 flex flex-col flex-1 minh0">
+          <div class="text-[11px] font-bold mb-0.5">📈 시간 – 유도 전압(V) 그래프 <span class="text-cyan-100/50">(= Φ 그래프의 기울기!)</span></div>
+          <div class="canvas-wrap graph-wrap flex-1 minh0"><canvas id="cv1e"></canvas></div>
+          <div class="flex justify-between text-[9px] mt-0.5 font-cyber">
+            <span class="neon-lime">＋ 방향</span><span style="color:#a8b0cc">V = 0</span><span class="neon-mag">－ 방향</span>
+          </div>
+        </div>
+        <div class="panel rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2.5 pb-2.5" style="border-bottom:1px solid rgba(0,234,255,.12)">
+            <span class="text-[11px] font-bold text-cyan-100/70">🎯 난이도</span>
+            <div class="flex gap-1.5">
+              <button id="t1diffEasy" class="ctrl-btn panel rounded-md px-2.5 py-1 text-[11px] font-bold" style="opacity:.55">쉬움</button>
+              <button id="t1diffNormal" class="ctrl-btn panel rounded-md px-2.5 py-1 text-[11px] font-bold neon-cyan glow-cyan">보통</button>
+              <button id="t1diffHard" class="ctrl-btn panel rounded-md px-2.5 py-1 text-[11px] font-bold" style="opacity:.55">어려움</button>
+            </div>
+          </div>
+          <div class="flex justify-between items-center mb-1.5">
+            <span class="font-bold text-sm">🚀 주행 속도</span>
+            <span id="t1spdTxt" class="font-cyber neon-cyan text-sm">0 km/h</span>
+          </div>
+          <div class="relative h-2 rounded-full mb-1 overflow-hidden" style="background:#0c1430;">
+            <div class="absolute inset-y-0" style="left:0;right:18%;background:rgba(0,234,255,.18)"></div>
+            <div class="absolute inset-y-0" style="left:82%;right:0;background:rgba(255,43,214,.45)"></div>
+          </div>
+          <div class="flex justify-end text-[9px] mb-2 font-cyber"><span class="neon-mag">과속 ⚠ 튕김</span></div>
+          <div class="flex items-center gap-2">
+            <button id="t1down" class="ctrl-btn panel rounded-lg w-10 h-10 text-xl font-cyber glow-cyan">−</button>
+            <input id="t1slider" type="range" min="0" max="100" value="42" />
+            <button id="t1up" class="ctrl-btn panel rounded-lg w-10 h-10 text-xl font-cyber glow-cyan">＋</button>
+          </div>
+          <button id="t1boost" class="ctrl-btn w-full mt-3 rounded-xl py-3 font-cyber font-bold text-sm panel glow-lime neon-lime" disabled>⚡ 부스터</button>
+          <div class="text-[10px] text-cyan-100/55 mt-1.5 text-center">충전 게이지가 차면 켜져요 · 제한속도 돌파!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel rounded-xl mt-3 overflow-hidden">
+      <button class="helpToggle w-full text-left px-4 py-2.5 flex justify-between items-center" data-target="help1">
+        <span class="font-bold text-sm neon-cyan">💡 개념 도움말 — 왜 가운데에선 전류가 0일까?</span><span class="text-cyan-100/50">▾</span>
+      </button>
+      <div id="help1" class="help-body px-4">
+        <div class="pb-4 text-sm text-cyan-100/80 leading-relaxed space-y-2">
+          <p><b>① 패러데이 법칙(자속 변화)으로 먼저 이해하기</b> — 코일을 수직으로 통과하는 자속은
+          <span class="font-cyber neon-cyan">Φ = B·A</span> 입니다. 자속이 시간에 따라 <b>변할 때만</b> 유도 전압이 생겨요:
+          <span class="font-cyber neon-lime">V = −N·ΔΦ/Δt</span>. (오른쪽: 유도 전압 그래프 = 자속 그래프의 기울기)</p>
+          <p><b>② 그래서 가운데선 전류가 0!</b> — 코일이 패드에 <b class="neon-lime">진입</b>하거나 <b class="neon-amber">이탈</b>할 때만
+          자속이 변해 전류가 흐릅니다. 코일이 패드 <b>안에 완전히 들어가면</b> 자속이 일정해져
+          ΔΦ/Δt = 0 → <b class="neon-amber">유도 전류 = 0</b>. 속도가 아무리 빨라도 가운데선 전류가 흐르지 않아요.</p>
+          <p><b>③ 추가로, V = −B·l·v 는 그 특수한 경우</b> — 코일이 경계를 속도 v로 지날 때
+          ΔΦ/Δt = B·l·v 가 되어 위 식이 <span class="font-cyber">V = −Blv</span> 로 정리됩니다.</p>
+          <p>🛡️ 진입 때 코일 둘레의 <b>방어막(유도 자기장)</b>과 전류 방향(⟳/⟲)은
+          변화를 방해하려는 <b>렌츠의 법칙</b> 때문입니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ TAB 2 ============================ -->
+  <section id="tab2" class="hidden-tab">
+    <div class="grid lg:grid-cols-[1.35fr_1fr] gap-2.5 fitvh">
+      <!-- LEFT: scene + battery -->
+      <div class="flex flex-col gap-2 minh0">
+        <div class="canvas-wrap scene-wrap flex-1 minh0">
+          <canvas id="cv2"></canvas>
+          <div class="absolute top-2.5 left-2.5 right-2.5 flex justify-between items-start pointer-events-none font-cyber">
+            <div class="panel rounded-xl px-3.5 py-2 text-[13px]">
+              <div class="text-pink-100/60 leading-none">변화율 dΦ/dt</div>
+              <div id="t2slope" class="text-2xl sm:text-3xl neon-mag leading-tight">0.0</div>
+            </div>
+            <div class="panel rounded-xl px-3.5 py-2 text-[13px] text-right">
+              <div class="text-pink-100/60 leading-none">유도 전류</div>
+              <div id="t2cur" class="text-2xl sm:text-3xl neon-amber leading-tight">0.00 A</div>
+            </div>
+          </div>
+          <div id="t2overlay" class="absolute inset-0 hidden items-center justify-center pointer-events-none"></div>
+        </div>
+        <div class="panel rounded-xl p-2.5">
+          <div class="flex justify-between text-[11px] mb-1">
+            <span class="font-bold">🔋 배터리 <span class="text-pink-100/50">(멈추면 계속 닳아요)</span></span>
+            <span id="t2battTxt" class="font-cyber neon-mag">55%</span>
+          </div>
+          <div class="batt-track rounded-full h-4">
+            <div id="t2battFill" class="batt-fill rounded-full" style="width:55%;background:linear-gradient(90deg,#ff2bd6,#ffb01f);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: 자기장 그래프 + 유도전압 그래프 + 조작부 -->
+      <div class="flex flex-col gap-2 minh0">
+        <div class="panel rounded-xl p-2 flex flex-col flex-1 minh0">
+          <div class="text-[11px] font-bold mb-0.5">📈 시간 – 자기장(B) 그래프 <span class="text-pink-100/50">(방향 부호 포함)</span></div>
+          <div class="canvas-wrap graph-wrap flex-1 minh0"><canvas id="cv2b"></canvas></div>
+          <div class="flex justify-between text-[9px] mt-0.5 font-cyber">
+            <span class="neon-cyan">⊗ 들어감 ＋</span><span style="color:#a8b0cc">B = 0</span><span class="neon-amber">⊙ 나옴 －</span>
+          </div>
+        </div>
+        <div class="panel rounded-xl p-2 flex flex-col flex-1 minh0">
+          <div class="text-[11px] font-bold mb-0.5">📈 시간 – 유도 전압(V) 그래프 <span class="text-pink-100/50">(= B 그래프의 기울기!)</span></div>
+          <div class="canvas-wrap graph-wrap flex-1 minh0"><canvas id="cv2e"></canvas></div>
+          <div class="flex justify-between text-[9px] mt-0.5 font-cyber">
+            <span class="neon-lime">＋ 방향</span><span style="color:#a8b0cc">V = 0</span><span class="neon-mag">－ 방향</span>
+          </div>
+        </div>
+        <div class="panel rounded-xl p-3">
+          <div class="text-[11px] font-bold mb-1.5">🧭 자기장 방향</div>
+          <div class="flex gap-2 mb-3">
+            <button id="t2dirOut" class="dirbtn on flex-1 panel rounded-lg py-2 text-sm font-bold neon-amber">⊙ 나오는 방향</button>
+            <button id="t2dirIn"  class="dirbtn flex-1 panel rounded-lg py-2 text-sm font-bold neon-cyan">⊗ 들어가는 방향</button>
+          </div>
+          <div class="flex justify-between items-center mb-1.5">
+            <span class="font-bold text-sm">🎚️ 자기장 세기 레버</span>
+            <span id="t2bTxt" class="font-cyber neon-mag text-sm">B=0</span>
+          </div>
+          <input id="t2slider" class="mag" type="range" min="0" max="100" value="0" />
+          <div class="flex gap-2 mt-2">
+            <button id="t2max" class="ctrl-btn panel rounded-lg flex-1 py-2.5 font-cyber text-sm glow-mag neon-mag">▲ MAX</button>
+            <button id="t2min" class="ctrl-btn panel rounded-lg flex-1 py-2.5 font-cyber text-sm">▼ MIN</button>
+          </div>
+          <div class="text-[10px] text-pink-100/55 mt-1.5 text-center">레버를 <b>빠르게</b> 흔들수록 충전! 멈추면 V=0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel rounded-xl mt-3 overflow-hidden">
+      <button class="helpToggle w-full text-left px-4 py-2.5 flex justify-between items-center" data-target="help2">
+        <span class="font-bold text-sm neon-mag">💡 개념 도움말 — 멈추면 왜 충전이 안 될까?</span><span class="text-pink-100/50">▾</span>
+      </button>
+      <div id="help2" class="help-body px-4">
+        <div class="pb-4 text-sm text-pink-100/80 leading-relaxed space-y-2">
+          <p>도선이 가만히 있어도 <b>자기장 세기 B 자체가 시간당 변하면</b> 자속 Φ=B·A 가 변해 유도 전압이 생깁니다.
+          → <span class="font-cyber neon-mag">V = −N·ΔΦ/Δt</span></p>
+          <p><b>두 그래프를 비교</b>하세요. 위(B) 그래프의 <b class="neon-lime">기울기</b>가 곧 아래(V) 그래프의 값입니다.
+          레버를 멈추면 B는 커도 기울기 0 → <b class="neon-mag">V = 0 → 충전 0</b>.</p>
+          <p>자기장이 <b>커질 때</b>와 <b>작아질 때</b>, 또 <b>방향(⊙/⊗)</b>을 바꾸면 유도 전류 화살표(⟳/⟲)의
+          방향이 반대로 뒤집힙니다 — <b>렌츠의 법칙</b> 때문이에요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="text-center text-[10px] text-cyan-100/40 mt-5 font-cyber leading-relaxed">
+    물리학 전자기 유도 — EdTech Simulation<br/>
+    제작자 (문의) : 강원고 박준영 · xodlf51@naver.com
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=(id)=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+let activeTab=1, paused=false, lastT=performance.now();
+
+function fitCanvas(cv){
+  const rect=cv.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const w=Math.max(2,Math.floor(rect.width));
+  const h=Math.max(2,Math.floor(rect.height||rect.width*0.5));
+  cv.width=Math.floor(w*dpr); cv.height=Math.floor(h*dpr);
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,W:w,H:h};
+}
+function makeSkyline(){ let s=12345; const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff;};
+  const arr=[]; let x=-40; while(x<1600){const w=30+rnd()*60,h=36+rnd()*120; arr.push({x,w,h,hue:rnd()<.5?'c':'m',win:Math.floor(2+rnd()*3)}); x+=w+8;} return arr; }
+const SKYLINE=makeSkyline();
+function drawSkyline(ctx,W,baseY,scroll){
+  for(const b of SKYLINE){ let bx=((b.x-scroll*0.22)%1600); if(bx<-120)bx+=1600; if(bx>W+120)bx-=1600;
+    const col=b.hue==='c'?'rgba(0,234,255,':'rgba(255,43,214,';
+    ctx.fillStyle='rgba(8,10,30,.9)'; ctx.fillRect(bx,baseY-b.h,b.w,b.h);
+    ctx.strokeStyle=col+'.4)'; ctx.lineWidth=1; ctx.strokeRect(bx+.5,baseY-b.h+.5,b.w-1,b.h-1);
+    ctx.fillStyle=col+'.45)'; for(let r=0;r<b.win;r++)for(let c=0;c<2;c++) ctx.fillRect(bx+6+c*(b.w-14),baseY-b.h+9+r*((b.h-14)/b.win),4,4);
+  }
+}
+/* 유도 전류 곡선 화살표: 머리는 항상 코일 위쪽, 크기·세기 비례, |cur|→0이면 사라짐 */
+function drawCurrentArrow(ctx,cx,cy,r,cur,maxCur){
+  const a=clamp(Math.abs(cur)/maxCur,0,1); if(a<0.05) return;
+  const dir=Math.sign(cur);
+  const col=cur>0?'0,234,255':'255,176,31';
+  const sweep=lerp(0.7,1.8,a)*Math.PI, lw=lerp(3,9,a);
+  ctx.save();
+  ctx.strokeStyle=`rgba(${col},${(0.65+0.35*a).toFixed(2)})`; ctx.lineWidth=lw; ctx.lineCap='round';
+  ctx.shadowColor=`rgba(${col},1)`; ctx.shadowBlur=16;
+  const head=-Math.PI/2, start=head-dir*sweep;
+  ctx.beginPath(); ctx.arc(cx,cy,r,start,head,dir<0); ctx.stroke();
+  const hx=cx+Math.cos(head)*r, hy=cy+Math.sin(head)*r, tang=head+dir*Math.PI/2, ah=11+lw;
+  ctx.beginPath();
+  ctx.moveTo(hx,hy); ctx.lineTo(hx-Math.cos(tang-0.45)*ah,hy-Math.sin(tang-0.45)*ah);
+  ctx.moveTo(hx,hy); ctx.lineTo(hx-Math.cos(tang+0.45)*ah,hy-Math.sin(tang+0.45)*ah);
+  ctx.stroke(); ctx.restore();
+}
+/* 부호 그래프: ＋/－/0(회색) 3색 */
+function signedGraph(ctx,W,H,pts,key,t,win,vmax,colPos,colNeg,colZero){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='rgba(10,8,24,.55)'; ctx.fillRect(0,0,W,H);
+  const midY=H/2;
+  ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,midY); ctx.lineTo(W,midY); ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.07)';
+  for(const fy of [0.25,0.75]){ ctx.beginPath(); ctx.moveTo(0,H*fy); ctx.lineTo(W,H*fy); ctx.stroke(); }
+  if(pts.length<2) return;
+  const t0=t-win, zb=vmax*0.05;
+  const X=tt=>clamp((tt-t0)/win,0,1)*W;
+  const Y=v=>midY - clamp(v/vmax,-1,1)*(H/2-4);
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1], b=pts[i], v=b[key];
+    ctx.strokeStyle=(colZero&&Math.abs(v)<zb)?colZero:(v>=0?colPos:colNeg); ctx.lineWidth=2.4;
+    ctx.beginPath(); ctx.moveTo(X(a.t),Y(a[key])); ctx.lineTo(X(b.t),Y(b[key])); ctx.stroke();
+  }
+  const last=pts[pts.length-1];
+  ctx.fillStyle='#fff'; ctx.shadowColor='#fff'; ctx.shadowBlur=7;
+  ctx.beginPath(); ctx.arc(X(last.t),Y(last[key]),3,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
+}
+const COL_FLUX_POS='rgba(0,234,255,.95)', COL_FLUX_NEG='rgba(255,176,31,.95)';
+const COL_V_POS='rgba(182,255,60,.95)', COL_V_NEG='rgba(255,43,214,.95)', COL_ZERO='rgba(160,170,200,.85)';
+
+/* ================================================================
+   MODE 1 — 코일이 움직인다 (자속/패러데이) + 등교 미션 + 부스터(필수)
+================================================================ */
+const T1={
+  cv:$('cv1'),ctx:null,W:0,H:0,
+  fcv:$('cv1f'),fctx:null,FW:0,FH:0, ecv:$('cv1e'),ectx:null,EW:0,EH:0,
+  s:null, sparks:[], rings:[],
+  V_MAX:300, RCOIL:50, PADW:190, PADGAP:470, PADSTART:560,
+  DEST:17500, TIME_LIMIT:60, CHARGE_K:0.00020, FLUX_SCALE:160, EMF_SCALE:460, WIN_T:6,
+  DANGER:82, BOOST_ADD:260, BOOST_DUR:2.5, BOOST_COST:34,
+  START_SLIDER:42, diff:'normal',
+  PRESETS:{
+    easy:  {TIME:66, DEST:17500, CK:0.00024, ADD:260, DUR:2.5, COST:30},
+    normal:{TIME:60, DEST:17500, CK:0.00020, ADD:260, DUR:2.5, COST:34},
+    hard:  {TIME:54, DEST:18500, CK:0.00017, ADD:260, DUR:2.5, COST:36},
+  },
+  applyDiff(name){ const p=this.PRESETS[name]; if(!p) return;
+    this.diff=name;
+    this.TIME_LIMIT=p.TIME; this.DEST=p.DEST; this.CHARGE_K=p.CK;
+    this.BOOST_ADD=p.ADD; this.BOOST_DUR=p.DUR; this.BOOST_COST=p.COST;
+    for(const [k,id] of [['easy','t1diffEasy'],['normal','t1diffNormal'],['hard','t1diffHard']]){
+      const el=$(id), on=(k===name);
+      el.classList.toggle('neon-cyan',on); el.classList.toggle('glow-cyan',on);
+      el.style.opacity = on?'1':'0.55';
+    }
+    this.init();
+  },
+
+  resize(){ let r=fitCanvas(this.cv); this.ctx=r.ctx;this.W=r.W;this.H=r.H;
+            r=fitCanvas(this.fcv); this.fctx=r.ctx;this.FW=r.W;this.FH=r.H;
+            r=fitCanvas(this.ecv); this.ectx=r.ctx;this.EW=r.W;this.EH=r.H; },
+
+  padProps(n){ let h=Math.sin(n*127.1+0.5)*43758.5453; h-=Math.floor(h);
+    let h2=Math.sin(n*311.7+1.3)*43758.5453; h2-=Math.floor(h2);
+    return {dir:h<0.5?1:-1, density:0.5+h2}; },
+  fluxAt(x){ const lx=x-this.RCOIL, rx=x+this.RCOIL; let f=0;
+    const first=Math.floor((lx-this.PADSTART)/this.PADGAP)-1;
+    for(let n=first;n<first+4;n++){ const p=this.padProps(n);
+      const px=this.PADSTART+n*this.PADGAP, pl=px-this.PADW/2, pr=px+this.PADW/2;
+      f += p.dir*p.density*Math.max(0,Math.min(rx,pr)-Math.max(lx,pl)); }
+    return f; },
+
+  init(){ this.resize();
+    this.s={ time:0,scooterX:0,v:0,slider:this.START_SLIDER,battery:0,flux:0,prevFlux:this.fluxAt(0),
+      emf:0,cur:0,status:'play',coilPhase:0,dangerT:0,shake:0,boostT:0,boostFlash:0,hist:[] };
+    this.sparks=[]; this.rings=[]; $('t1slider').value=this.START_SLIDER;
+    this.hideOverlay(); this.updateHUD(); },
+  setSlider(v){ this.s.slider=clamp(v,0,100); $('t1slider').value=this.s.slider; this.updateHUD(); },
+  boost(){ const s=this.s; if(s.status!=='play'||s.boostT>0||s.battery<this.BOOST_COST) return;
+    s.battery-=this.BOOST_COST; s.boostT=this.BOOST_DUR; s.boostFlash=1; this.updateHUD(); },
+
+  win(){ const rem=(this.TIME_LIMIT-this.s.time).toFixed(1); this.s.status='win';
+    this.showOverlay(`<div class="overlay-msg text-center"><div class="text-4xl mb-1">🏫🎉</div>
+      <div class="font-cyber text-2xl neon-lime">등교 성공!</div>
+      <div class="mt-1 text-cyan-100/80 text-sm">${rem}초 남기고 도착! 부스터 타이밍이 완벽했어요 🛴💨</div>
+      <div class="mt-2 text-[11px] text-cyan-100/50">리셋(↻)으로 다시 도전</div></div>`); },
+  fail(kind){ this.s.status='fail';
+    const m = kind==='fly'
+      ? {i:'💥',t:'과속! 튕겨 나감',d:'제한속도를 넘었어요. 속도를 낮추고, 모아둔 ⚡부스터로 치고 나가세요.'}
+      : {i:'⏰',t:'지각이다!',d:'그냥 달려선 못 와요. 충전 게이지를 모아 ⚡부스터를 더 적극적으로 쓰세요!'};
+    this.showOverlay(`<div class="overlay-msg text-center"><div class="text-4xl mb-1 flicker">${m.i}</div>
+      <div class="font-cyber text-2xl neon-mag">${m.t}</div>
+      <div class="mt-1 text-cyan-100/80 text-sm">${m.d}</div>
+      <div class="mt-2 text-[11px] text-cyan-100/50">리셋(↻)으로 다시 도전</div></div>`); },
+  showOverlay(h){ const o=$('t1overlay'); o.innerHTML=`<div class="panel rounded-2xl px-5 py-5 max-w-xs mx-3">${h}</div>`; o.classList.remove('hidden'); o.classList.add('flex'); },
+  hideOverlay(){ const o=$('t1overlay'); o.classList.add('hidden'); o.classList.remove('flex'); o.innerHTML=''; },
+
+  update(dt){ const s=this.s; if(s.status!=='play') return;
+    s.time+=dt; s.boostT=Math.max(0,s.boostT-dt); s.boostFlash*=0.9;
+    const base=s.slider/100*this.V_MAX;
+    const target=base+(s.boostT>0?this.BOOST_ADD:0);
+    s.v=lerp(s.v,target,clamp(dt*6,0,1));
+    const over = s.slider>this.DANGER && s.boostT<=0;
+    if(over){ s.dangerT+=dt; s.shake=clamp((s.slider-this.DANGER)/12,0,1); }
+    else { s.dangerT=Math.max(0,s.dangerT-dt*1.6); s.shake*=0.85; }
+    if(s.dangerT>1.2){ this.fail('fly'); return; }
+    s.scooterX+=s.v*dt;
+    const flux=this.fluxAt(s.scooterX); s.flux=flux;
+    let emf=-(flux-s.prevFlux)/Math.max(dt,1e-4); s.prevFlux=flux;
+    emf=clamp(emf,-this.V_MAX*1.5,this.V_MAX*1.5); s.emf=emf;
+    s.cur=lerp(s.cur,emf,clamp(dt*12,0,1));
+    const charge=this.CHARGE_K*emf*emf*dt;
+    if(charge>0.0001){ s.battery=clamp(s.battery+charge,0,100);
+      const n=clamp(Math.floor(charge*40),1,5); for(let i=0;i<n;i++) this.spawnSpark(emf);
+      if(Math.abs(emf)>140 && Math.random()<0.4) this.rings.push({r:this.RCOIL*0.7,a:0.7,sign:Math.sign(emf)}); }
+    s.coilPhase += Math.sign(s.cur)*(0.6+Math.abs(s.cur)/120)*dt*5;
+    for(const p of this.sparks){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=120*dt; p.life-=dt; }
+    this.sparks=this.sparks.filter(p=>p.life>0);
+    for(const rg of this.rings){ rg.r+=150*dt; rg.a-=dt*1.1; } this.rings=this.rings.filter(r=>r.a>0);
+    s.hist.push({t:s.time,flux,emf}); while(s.hist.length&&s.hist[0].t<s.time-this.WIN_T) s.hist.shift();
+    if(s.scooterX>=this.DEST){ this.win(); }
+    else if(s.time>=this.TIME_LIMIT){ this.fail('late'); }
+    this.updateHUD();
+  },
+  spawnSpark(emf){ const ang=Math.random()*Math.PI*2,sp=40+Math.random()*120;
+    this.sparks.push({x:0,y:0,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp-40,life:0.3+Math.random()*0.3,max:0.6,col:emf>0?'0,234,255':'255,176,31'}); },
+
+  updateHUD(){ const s=this.s;
+    $('t1time').textContent=Math.max(0,this.TIME_LIMIT-s.time).toFixed(1);
+    $('t1prog').textContent=Math.floor(clamp(s.scooterX/this.DEST,0,1)*100)+'%';
+    $('t1battTxt').textContent=Math.floor(s.battery)+'%'; $('t1battFill').style.width=s.battery+'%';
+    $('t1cur').textContent=(Math.abs(s.cur)/100).toFixed(2)+' A';
+    $('t1spdTxt').textContent=Math.round(s.slider/100*45)+' km/h';
+    $('t1spdTxt').className='font-cyber text-sm '+(s.slider>this.DANGER?'neon-mag':'neon-cyan');
+    const bb=$('t1boost'), ready=(s.battery>=this.BOOST_COST&&s.boostT<=0&&s.status==='play');
+    bb.disabled=!ready; bb.textContent = s.boostT>0 ? '⚡ 부스터 가동 중!' : '⚡ 부스터';
+  },
+
+  draw(){ const ctx=this.ctx,W=this.W,H=this.H,s=this.s; if(!ctx) return;
+    ctx.clearRect(0,0,W,H);
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0a0822'); g.addColorStop(.6,'#0d0a2e'); g.addColorStop(1,'#05030f');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const roadY=H*0.70;
+    drawSkyline(ctx,W,roadY-6,s.scooterX);
+    ctx.fillStyle='#08091a'; ctx.fillRect(0,roadY,W,H-roadY);
+    ctx.strokeStyle='rgba(0,234,255,.5)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,roadY); ctx.lineTo(W,roadY); ctx.stroke();
+    const cam=s.scooterX-W*0.3;
+    ctx.strokeStyle='rgba(255,255,255,.16)'; ctx.lineWidth=3; ctx.setLineDash([24,24]); ctx.lineDashOffset=(-cam*0.6)%48;
+    const ly=(roadY+H)/2; ctx.beginPath(); ctx.moveTo(0,ly); ctx.lineTo(W,ly); ctx.stroke(); ctx.setLineDash([]);
+    const first=Math.floor((cam-this.PADW)/this.PADGAP)-1;
+    for(let n=first;n<first+Math.ceil(W/this.PADGAP)+3;n++){
+      const px=this.PADSTART+n*this.PADGAP, sx=px-cam;
+      if(sx<-this.PADW||sx>W+this.PADW) continue;
+      this.drawPad(ctx,sx,roadY,H,this.padProps(n));
+    }
+    const gsx=this.DEST-cam; if(gsx<W+200) this.drawSchool(ctx,gsx,roadY,H);
+
+    const scx=W*0.3, scy=roadY-5, coilY=scy-26;
+    ctx.save();
+    if(s.shake>0) ctx.translate((Math.random()-.5)*8*s.shake,(Math.random()-.5)*6*s.shake);
+    if(s.boostT>0) this.drawFlame(ctx,scx,scy);
+    this.drawScooter(ctx,scx,scy);
+    this.drawCoil(ctx,scx,coilY,this.RCOIL*0.7,s);
+    for(const rg of this.rings){ ctx.strokeStyle=(rg.sign>0?'rgba(0,234,255,':'rgba(255,176,31,')+rg.a.toFixed(2)+')';
+      ctx.lineWidth=3; ctx.beginPath(); ctx.arc(scx,coilY,rg.r,0,Math.PI*2); ctx.stroke(); }
+    for(const p of this.sparks){ ctx.fillStyle=`rgba(${p.col},${(p.life/p.max).toFixed(2)})`;
+      ctx.beginPath(); ctx.arc(scx+p.x,coilY+p.y,2.3,0,Math.PI*2); ctx.fill(); }
+    drawCurrentArrow(ctx,scx,coilY,this.RCOIL+24,s.cur,this.V_MAX);
+    ctx.restore();
+
+    if(s.boostT>0){ ctx.fillStyle='rgba(182,255,60,.95)'; ctx.font='bold 16px Orbitron'; ctx.textAlign='center'; ctx.fillText('BOOST!',scx,coilY-this.RCOIL-44); }
+    const inside=Math.abs(s.flux)>this.RCOIL*0.9 && Math.abs(s.emf)<20;
+    if(inside&&s.status==='play'&&s.boostT<=0){ ctx.fillStyle='rgba(255,176,31,.92)'; ctx.font='bold 12px Orbitron'; ctx.textAlign='center'; ctx.fillText('완전히 진입 → 자속 일정 → V=0',scx,coilY-this.RCOIL-44); }
+
+    ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fillRect(10,H-10,W-20,4);
+    ctx.fillStyle='rgba(182,255,60,.9)'; ctx.fillRect(10,H-10,(W-20)*clamp(s.scooterX/this.DEST,0,1),4);
+
+    signedGraph(this.fctx,this.FW,this.FH,s.hist,'flux',s.time,this.WIN_T,this.FLUX_SCALE,COL_FLUX_POS,COL_FLUX_NEG,COL_ZERO);
+    signedGraph(this.ectx,this.EW,this.EH,s.hist,'emf',s.time,this.WIN_T,this.EMF_SCALE,COL_V_POS,COL_V_NEG,COL_ZERO);
+  },
+
+  drawSchool(ctx,sx,roadY,H){ const w=120,h=90,x=sx,y=roadY-h;
+    ctx.fillStyle='rgba(10,12,34,.95)'; ctx.fillRect(x-w/2,y,w,h);
+    ctx.strokeStyle='rgba(182,255,60,.9)'; ctx.lineWidth=2; ctx.strokeRect(x-w/2,y,w,h);
+    ctx.fillStyle='rgba(182,255,60,.85)'; ctx.beginPath(); ctx.moveTo(x-w/2-6,y); ctx.lineTo(x,y-28); ctx.lineTo(x+w/2+6,y); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#cfe'; ctx.font='bold 13px Orbitron'; ctx.textAlign='center'; ctx.fillText('🏫 SCHOOL',x,y+h/2);
+    ctx.fillStyle='rgba(0,234,255,.6)'; for(let i=0;i<3;i++)for(let j=0;j<2;j++) ctx.fillRect(x-w/2+14+i*40,y+12+j*34,18,16);
+  },
+  /* 패드: 같은 크기, 자기장이 셀수록 자기선속(⊗/⊙) 밀도↑, 세기 숫자 크게 */
+  drawPad(ctx,sx,roadY,H,p){ const w=this.PADW, into=p.dir>0, d=p.density, tt=clamp((d-0.5)/1.0,0,1);
+    const base=into?'0,234,255':'255,176,31';
+    const grd=ctx.createLinearGradient(0,roadY,0,H);
+    grd.addColorStop(0,`rgba(${base},${(0.12+0.22*tt).toFixed(2)})`); grd.addColorStop(1,`rgba(${base},.02)`);
+    ctx.fillStyle=grd; ctx.fillRect(sx-w/2,roadY,w,H-roadY);
+    ctx.strokeStyle=`rgba(${base},.8)`; ctx.lineWidth=2; ctx.strokeRect(sx-w/2,roadY+2,w,H-roadY-4);
+    // 자기선속 격자 (개수 ∝ 자기장 세기)
+    const cols=Math.round(lerp(3,8,tt)), rows=Math.round(lerp(2,5,tt));
+    const x0=sx-w/2, y0=roadY+10, regH=(H-roadY)-18, rr=4.2;
+    ctx.strokeStyle=`rgba(${base},.78)`; ctx.fillStyle=`rgba(${base},.78)`; ctx.lineWidth=1.4;
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+      const px=x0+(c+0.5)*(w/cols), py=y0+(r+0.5)*(regH/rows);
+      ctx.beginPath(); ctx.arc(px,py,rr,0,Math.PI*2); ctx.stroke();
+      if(into){ ctx.beginPath(); ctx.moveTo(px-rr*0.6,py-rr*0.6); ctx.lineTo(px+rr*0.6,py+rr*0.6);
+        ctx.moveTo(px+rr*0.6,py-rr*0.6); ctx.lineTo(px-rr*0.6,py+rr*0.6); ctx.stroke(); }
+      else { ctx.beginPath(); ctx.arc(px,py,1.5,0,Math.PI*2); ctx.fill(); }
+    }
+    // 세기 숫자 (1.5배 크게 + 글로우)
+    ctx.save(); ctx.shadowColor=`rgba(${base},.9)`; ctx.shadowBlur=8;
+    ctx.fillStyle=`rgba(${base},1)`; ctx.font='bold 14px Orbitron'; ctx.textAlign='center';
+    ctx.fillText((into?'⊗ ':'⊙ ')+'B '+d.toFixed(1), sx, roadY-7); ctx.restore();
+  },
+  drawScooter(ctx,x,y){ ctx.save(); ctx.lineCap='round'; ctx.shadowColor='rgba(0,234,255,.8)'; ctx.shadowBlur=9;
+    ctx.fillStyle='#0a0a1a';
+    for(const wx of [-30,34]){ ctx.beginPath(); ctx.arc(x+wx,y,9,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#7df9ff'; ctx.lineWidth=3; ctx.stroke(); }
+    ctx.strokeStyle='#7df9ff'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(x-30,y-8); ctx.lineTo(x+24,y-8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+24,y-8); ctx.lineTo(x+40,y-42); ctx.lineTo(x+52,y-42); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x+8,y-52,7,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+8,y-45); ctx.lineTo(x+10,y-22); ctx.lineTo(x+38,y-38); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+10,y-22); ctx.lineTo(x-4,y-9); ctx.lineTo(x+16,y-9); ctx.stroke();
+    ctx.restore(); },
+  drawFlame(ctx,x,y){ ctx.save(); ctx.translate(x-34,y-8);
+    for(let i=0;i<3;i++){ const l=22+Math.random()*22; ctx.fillStyle=`rgba(${i?'255,176,31':'182,255,60'},${(0.5+Math.random()*0.4).toFixed(2)})`;
+      ctx.beginPath(); ctx.moveTo(0,-4-i*2); ctx.lineTo(-l,(Math.random()-.5)*8); ctx.lineTo(0,4+i*2); ctx.closePath(); ctx.fill(); }
+    ctx.restore(); },
+  drawCoil(ctx,cx,cy,r,s){ ctx.save();
+    ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.66,0,Math.PI*2); ctx.stroke();
+    const mag=Math.abs(s.cur), np=mag<8?0:clamp(Math.floor(mag/12),3,16), col=s.cur>0?'0,234,255':'255,176,31';
+    for(let i=0;i<np;i++){ const a=s.coilPhase+i*(Math.PI*2/np), rr=r*0.83;
+      ctx.fillStyle=`rgba(${col},.95)`; ctx.shadowColor=`rgba(${col},1)`; ctx.shadowBlur=9;
+      ctx.beginPath(); ctx.arc(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr,3,0,Math.PI*2); ctx.fill(); }
+    ctx.shadowBlur=0; ctx.restore(); },
+  frame(dt){ if(!paused) this.update(dt); this.draw(); }
+};
+
+/* ================================================================
+   MODE 2 — 자기장이 변한다 (V=-NΔΦ/Δt) + 방향 토글 + B/V 그래프
+================================================================ */
+const T2={
+  cv:$('cv2'),ctx:null,W:0,H:0,
+  bcv:$('cv2b'),bctx:null,BW:0,BH:0, ecv:$('cv2e'),ectx:null,EW:0,EH:0,
+  s:null, bolts:[], rings:[],
+  DRAIN:1.6, CHARGE_K:0.00008, START:55, WIN_T:6, EMF_SCALE:600,
+
+  resize(){ let r=fitCanvas(this.cv); this.ctx=r.ctx;this.W=r.W;this.H=r.H;
+            r=fitCanvas(this.bcv); this.bctx=r.ctx;this.BW=r.W;this.BH=r.H;
+            r=fitCanvas(this.ecv); this.ectx=r.ctx;this.EW=r.W;this.EH=r.H; },
+
+  init(){ this.resize();
+    this.s={ mag:0,dir:1,signed:0,prevSigned:0,dBdt:0,emf:0,cur:0,battery:this.START,
+      time:0,status:'play',coilPhase:0,flash:0,hist:[] };
+    this.bolts=[]; this.rings=[]; $('t2slider').value=0; this.setDir(-1); this.hideOverlay(); this.updateHUD(); },
+  setSlider(v){ this.s.mag=clamp(v,0,100); $('t2slider').value=this.s.mag; },
+  setDir(d){ this.s.dir=d; $('t2dirOut').classList.toggle('on',d<0); $('t2dirIn').classList.toggle('on',d>0); },
+
+  win(){ this.s.status='win';
+    this.showOverlay(`<div class="overlay-msg text-center"><div class="text-4xl mb-1">⚡🎉</div>
+      <div class="font-cyber text-2xl neon-lime">CHARGE 100%!</div>
+      <div class="mt-1 text-pink-100/80 text-sm">변화를 멈추지 않았군요! 완벽한 무선 충전 ✨</div>
+      <div class="mt-2 text-[11px] text-pink-100/50">리셋(↻)으로 다시 도전</div></div>`); },
+  fail(){ this.s.status='fail';
+    this.showOverlay(`<div class="overlay-msg text-center"><div class="text-4xl mb-1 flicker">🪫</div>
+      <div class="font-cyber text-2xl neon-mag">방전… 화면이 꺼졌다</div>
+      <div class="mt-1 text-pink-100/80 text-sm">레버를 더 <b>빠르게</b> 흔드세요! 멈추면 V=0 → 충전 0.</div>
+      <div class="mt-2 text-[11px] text-pink-100/50">리셋(↻)으로 다시 도전</div></div>`); },
+  showOverlay(h){ const o=$('t2overlay'); o.innerHTML=`<div class="panel rounded-2xl px-5 py-5 max-w-xs mx-3">${h}</div>`; o.classList.remove('hidden'); o.classList.add('flex'); },
+  hideOverlay(){ const o=$('t2overlay'); o.classList.add('hidden'); o.classList.remove('flex'); o.innerHTML=''; },
+
+  update(dt){ const s=this.s; if(s.status!=='play') return;
+    s.time+=dt; s.signed=s.dir*s.mag;
+    s.dBdt=(s.signed-s.prevSigned)/Math.max(dt,1e-4); s.prevSigned=s.signed;
+    s.dBdt=clamp(s.dBdt,-600,600); s.emf=-s.dBdt; s.cur=lerp(s.cur,s.emf,clamp(dt*14,0,1));
+    const charge=this.CHARGE_K*s.dBdt*s.dBdt*dt;
+    s.battery=clamp(s.battery+charge-this.DRAIN*dt,0,100);
+    if(Math.abs(s.dBdt)>60){ s.flash=clamp(s.flash+Math.abs(s.dBdt)/600*dt*6,0,1);
+      if(Math.random()<0.35) this.spawnBolt();
+      if(Math.random()<0.4) this.rings.push({r:18,a:0.7,sign:Math.sign(s.emf)}); }
+    s.flash*=0.86; s.coilPhase+=Math.sign(s.cur)*(0.4+Math.abs(s.cur)/90)*dt*5;
+    s.hist.push({t:s.time,B:s.signed,emf:s.emf}); while(s.hist.length&&s.hist[0].t<s.time-this.WIN_T) s.hist.shift();
+    for(const b of this.bolts) b.life-=dt; this.bolts=this.bolts.filter(b=>b.life>0);
+    for(const rg of this.rings){ rg.r+=120*dt; rg.a-=dt*1.2; } this.rings=this.rings.filter(r=>r.a>0);
+    if(s.battery>=100) this.win(); else if(s.battery<=0){ s.battery=0; this.fail(); }
+    this.updateHUD();
+  },
+  spawnBolt(){ const n=5+Math.floor(Math.random()*3),segs=[]; for(let i=0;i<=n;i++) segs.push((Math.random()-0.5)*26); this.bolts.push({segs,life:0.12,n}); },
+
+  updateHUD(){ const s=this.s;
+    $('t2battTxt').textContent=Math.floor(s.battery)+'%'; $('t2battFill').style.width=s.battery+'%';
+    $('t2bTxt').textContent='B='+(s.dir>0?'+':'−')+Math.round(s.mag);
+    $('t2slope').textContent=(s.dBdt/10).toFixed(1);
+    $('t2slope').className='text-2xl sm:text-3xl leading-tight '+(Math.abs(s.dBdt)>120?'neon-lime':'neon-mag');
+    $('t2cur').textContent=(Math.abs(s.cur)/100).toFixed(2)+' A';
+  },
+
+  draw(){ const ctx=this.ctx,W=this.W,H=this.H,s=this.s; if(!ctx) return;
+    ctx.clearRect(0,0,W,H);
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#150a26'); g.addColorStop(1,'#06040f'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const tableY=H*0.82; ctx.fillStyle='#0c0a1c'; ctx.fillRect(0,tableY,W,H-tableY);
+    ctx.strokeStyle='rgba(255,43,214,.4)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,tableY); ctx.lineTo(W,tableY); ctx.stroke();
+    const cx=W*0.5, cy=H*0.46, into=s.dir>0, base=into?'0,234,255':'255,176,31';
+    const padW=Math.min(W*0.52,230), padY=tableY-8, lines=Math.floor(2+s.mag/12);
+    for(let i=0;i<lines;i++){ const rad=16+i*15+s.flash*9;
+      ctx.strokeStyle=`rgba(${base},${(0.06+0.18*(s.mag/100)).toFixed(3)})`; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.ellipse(cx,padY,padW*0.5*(0.4+i*0.12),rad,0,Math.PI,Math.PI*2); ctx.stroke(); }
+    ctx.fillStyle=`rgba(${base},.18)`; ctx.fillRect(cx-padW/2,padY-6,padW,16);
+    ctx.strokeStyle=`rgba(${base},.7)`; ctx.lineWidth=2; ctx.strokeRect(cx-padW/2,padY-6,padW,16);
+    ctx.strokeStyle=`rgba(${base},.85)`; ctx.fillStyle=`rgba(${base},.85)`;
+    for(let i=0;i<4;i++){ const px=cx-padW/2+(i+0.5)*(padW/4), py=padY+2, rr=5;
+      ctx.beginPath(); ctx.arc(px,py,rr,0,Math.PI*2); ctx.stroke();
+      if(into){ ctx.beginPath(); ctx.moveTo(px-3,py-3); ctx.lineTo(px+3,py+3); ctx.moveTo(px+3,py-3); ctx.lineTo(px-3,py+3); ctx.stroke(); }
+      else { ctx.beginPath(); ctx.arc(px,py,1.5,0,Math.PI*2); ctx.fill(); } }
+    ctx.fillStyle=`rgba(${base},.9)`; ctx.font='bold 9px Orbitron'; ctx.textAlign='center';
+    ctx.fillText('WIRELESS PAD · '+(into?'⊗ IN':'⊙ OUT')+' · B='+Math.round(s.mag), cx, padY+24);
+
+    for(const b of this.bolts){ ctx.strokeStyle=`rgba(182,255,60,${(b.life/0.12).toFixed(2)})`; ctx.lineWidth=2.2;
+      ctx.shadowColor='rgba(182,255,60,.9)'; ctx.shadowBlur=12; ctx.beginPath();
+      for(let i=0;i<=b.n;i++){ const yy=lerp(padY,cy+24,i/b.n), xx=cx+b.segs[i]; if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
+      ctx.stroke(); ctx.shadowBlur=0; }
+
+    const ph=Math.min(212,H*0.62), pw=ph*0.55; ctx.save(); ctx.translate(cx,cy);
+    ctx.fillStyle='#0a0a18'; ctx.strokeStyle=s.flash>0.2?'rgba(182,255,60,.9)':'rgba(255,43,214,.7)'; ctx.lineWidth=3;
+    this.rr(ctx,-pw/2,-ph/2,pw,ph,18); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=s.battery<=0?'#05050a':'rgba(255,43,214,.07)'; this.rr(ctx,-pw/2+7,-ph/2+12,pw-14,ph-24,11); ctx.fill();
+    ctx.restore();
+
+    const ccy=cy - ph*0.18;
+    for(const rg of this.rings){ ctx.strokeStyle=(rg.sign>0?'rgba(0,234,255,':'rgba(255,176,31,')+rg.a.toFixed(2)+')';
+      ctx.lineWidth=3; ctx.beginPath(); ctx.arc(cx,ccy,rg.r,0,Math.PI*2); ctx.stroke(); }
+    this.drawCoil(ctx,cx,ccy,ph*0.142,s);
+    drawCurrentArrow(ctx,cx,ccy,ph*0.22,s.cur,520);
+
+    ctx.textAlign='center';
+    if(s.battery<=0){
+      ctx.font='900 22px Orbitron'; ctx.fillStyle='#ff6'; ctx.fillText('0%',cx,cy+ph*0.05);
+      ctx.font='9px Orbitron'; ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fillText('BATTERY',cx,cy+ph*0.13);
+      ctx.font='30px sans-serif'; ctx.fillText('💀',cx,cy+ph*0.35);
+      ctx.font='9px Orbitron'; ctx.fillStyle='#ff6'; ctx.fillText('NO POWER',cx,cy+ph*0.43);
+    } else {
+      ctx.font='900 24px Orbitron'; ctx.fillStyle='#dffaff'; ctx.fillText(Math.floor(s.battery)+'%',cx,cy+ph*0.05);
+      ctx.font='9px Orbitron'; ctx.fillStyle='rgba(255,255,255,.5)'; ctx.fillText('BATTERY',cx,cy+ph*0.13);
+      const f=s.battery>80?'😎':s.battery>40?'🙂':s.battery>18?'😟':'😵';
+      ctx.font='30px sans-serif'; ctx.fillText(f,cx,cy+ph*0.35);
+    }
+    if(s.mag>55 && Math.abs(s.dBdt)<12 && s.status==='play'){ ctx.fillStyle='rgba(255,176,31,.95)'; ctx.font='bold 12px Orbitron'; ctx.textAlign='center';
+      ctx.fillText('B는 큰데 변화 0 → V=0 → 충전 0!', cx, cy-ph/2-12); }
+
+    signedGraph(this.bctx,this.BW,this.BH,s.hist,'B',s.time,this.WIN_T,100,COL_FLUX_POS,COL_FLUX_NEG,COL_ZERO);
+    signedGraph(this.ectx,this.EW,this.EH,s.hist,'emf',s.time,this.WIN_T,this.EMF_SCALE,COL_V_POS,COL_V_NEG,COL_ZERO);
+  },
+  drawCoil(ctx,cx,cy,r,s){ ctx.save(); ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.arc(cx,cy,r*0.62,0,Math.PI*2); ctx.stroke();
+    const mag=Math.abs(s.cur), np=mag<8?0:clamp(Math.floor(mag/12),3,16), col=s.cur>0?'0,234,255':'255,176,31';
+    for(let i=0;i<np;i++){ const a=s.coilPhase+i*(Math.PI*2/np), rr=r*0.81;
+      ctx.fillStyle=`rgba(${col},.95)`; ctx.shadowColor=`rgba(${col},1)`; ctx.shadowBlur=9;
+      ctx.beginPath(); ctx.arc(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr,3,0,Math.PI*2); ctx.fill(); }
+    ctx.shadowBlur=0; ctx.restore(); },
+  rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); },
+  frame(dt){ if(!paused) this.update(dt); this.draw(); }
+};
+
+/* ===== 루프 & 이벤트 ===== */
+function loop(now){ let dt=(now-lastT)/1000; lastT=now; dt=clamp(dt,0,0.05);
+  if(activeTab===1) T1.frame(dt); else T2.frame(dt); requestAnimationFrame(loop); }
+function switchTab(n){ activeTab=n;
+  $('tab1').classList.toggle('hidden-tab',n!==1); $('tab2').classList.toggle('hidden-tab',n!==2);
+  $('tabBtn1').classList.toggle('active',n===1); $('tabBtn2').classList.toggle('active',n===2);
+  requestAnimationFrame(()=>{ if(n===1) T1.resize(); else T2.resize(); }); }
+function setPaused(p){ paused=p; $('pauseBtn').innerHTML=p?'▶ 계속하기':'⏸ 일시정지'; $('pauseBtn').classList.toggle('neon-lime',p); }
+function resetActive(){ if(activeTab===1) T1.init(); else T2.init(); setPaused(false); }
+
+$('tabBtn1').addEventListener('click',()=>switchTab(1));
+$('tabBtn2').addEventListener('click',()=>switchTab(2));
+$('pauseBtn').addEventListener('click',()=>setPaused(!paused));
+$('resetBtn').addEventListener('click',resetActive);
+$('t1slider').addEventListener('input',e=>{ T1.s.slider=+e.target.value; T1.updateHUD(); });
+$('t1up').addEventListener('click',()=>T1.setSlider(T1.s.slider+8));
+$('t1down').addEventListener('click',()=>T1.setSlider(T1.s.slider-8));
+$('t1boost').addEventListener('click',()=>T1.boost());
+$('t1diffEasy').addEventListener('click',()=>T1.applyDiff('easy'));
+$('t1diffNormal').addEventListener('click',()=>T1.applyDiff('normal'));
+$('t1diffHard').addEventListener('click',()=>T1.applyDiff('hard'));
+$('t2slider').addEventListener('input',e=>{ T2.s.mag=+e.target.value; });
+$('t2max').addEventListener('click',()=>T2.setSlider(100));
+$('t2min').addEventListener('click',()=>T2.setSlider(0));
+$('t2dirOut').addEventListener('click',()=>T2.setDir(-1));
+$('t2dirIn').addEventListener('click',()=>T2.setDir(1));
+document.querySelectorAll('.helpToggle').forEach(b=>b.addEventListener('click',()=>$(b.dataset.target).classList.toggle('open')));
+let rzTO; window.addEventListener('resize',()=>{ clearTimeout(rzTO); rzTO=setTimeout(()=>{ if(activeTab===1)T1.resize(); else T2.resize(); },120); });
+window.addEventListener('load',()=>{ T1.init(); T2.init(); switchTab(1); lastT=performance.now(); requestAnimationFrame(loop);
+  setTimeout(()=>{ if(activeTab===1)T1.resize(); else T2.resize(); }, 350);
+  setTimeout(()=>{ if(activeTab===1)T1.resize(); else T2.resize(); }, 900); });
+T1.init(); T2.init();
+</script>
+</body>
+</html>
